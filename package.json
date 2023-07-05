@@ -2,6 +2,7 @@
   "name": "yapihello",
   "displayName": "YapiHello",
   "description": "哈啰yapi助手",
+  "publisher": "tianfengyu",
   "repository": {
     "type": "git",
     "url": "https://github.com/bihacat/yapihello.git"

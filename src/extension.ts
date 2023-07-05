@@ -48,13 +48,16 @@ export function activate(context: vscode.ExtensionContext) {
 					hoverText.appendMarkdown('[生成请求类型](command:yapihello.reqInterface)');
 					hoverText.appendMarkdown('[ 生成响应类型](command:yapihello.respInterface)');
 					hoverText.appendMarkdown(`\n\n请求类型`);
-					hoverText.appendCodeblock(`${result.req}`);
+					hoverText.appendCodeblock(`${result.req.text}`);
 					hoverText.appendMarkdown(`响应类型`)
-					hoverText.appendCodeblock(`${result.resp}`);
+					hoverText.appendCodeblock(`${result.resp.text}`);
 					const wordRange = document.getWordRangeAtPosition(position);
-					const {ignoredVar} = result;
-					if (ignoredVar.length > 0) {
-						vscode.window.showWarningMessage(`由于类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${ignoredVar.join(',')}`)
+					const {req: {ignoredType: reqignoredType}, resp: {ignoredType: respignoredType}} = result
+					if (reqignoredType.length > 0) {
+						vscode.window.showWarningMessage(`由于请求类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${reqignoredType.join(',')}`)
+					}
+					if (respignoredType.length > 0) {
+						vscode.window.showWarningMessage(`由于响应类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${respignoredType.join(',')}`)
 					}
 					return new vscode.Hover(hoverText, wordRange);
 				} catch (error) {
@@ -74,7 +77,10 @@ export function activate(context: vscode.ExtensionContext) {
       const activeTextEditor = vscode.window.activeTextEditor;
       if (activeTextEditor) {
         activeTextEditor.edit((editBuilder) => {
-          editBuilder.insert(hoverLine, `\n${result!.req}`);
+					const insertText = `\
+${result!.req.ignoredType.length ? `// 以下字段类型未被收录，已设置为unknown，可在Setting.yapihello.typeMap设置\n//${result!.req.ignoreVar.join(',')}` : ''}
+${result!.req.text}`
+          editBuilder.insert(hoverLine, insertText);
 				});
       }
     } catch (error) {
@@ -90,7 +96,10 @@ export function activate(context: vscode.ExtensionContext) {
       const activeTextEditor = vscode.window.activeTextEditor;
       if (activeTextEditor) {
         activeTextEditor.edit((editBuilder) => {
-          editBuilder.insert(hoverLine, `\n${result!.resp}`);
+					const insertText = `\
+${result!.resp.ignoredType?.length ? `\n// 以下字段类型未被收录，已设置为unknown，可在Setting.yapihello.typeMap设置\n// ${result!.resp.ignoredType.join(',')}` : ''}
+${result!.resp.text}`
+          editBuilder.insert(hoverLine, insertText);
         });
       }
     } catch (error) {

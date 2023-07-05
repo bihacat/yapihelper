@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ApiDataType, PropertiesType, PropertiesValType, PropertyItemsType, PropertyType, TypeMapType } from './interface';
 
-let ignoredVar: string[] = [];
+let ignoredType: string[] = [];
 /** 根据空格数量缩进 */
 const indentSpace = (num: number) => {
   return [...Array(num)].map((_) => ' ').join('');
@@ -55,7 +55,8 @@ const parseObj2Type = (val: PropertyItemsType | PropertiesValType, key: string, 
   if (typeStr) {
     return makeSingleProperty(indent, key, description, typeStr)
   }
-  ignoredVar.push(key);
+  ignoredType.push(type);
+  return makeSingleProperty(indent, key, description, 'unknown');
 }
 
 /** 遍历全部属性 */
@@ -76,13 +77,13 @@ const properties2Type = (properties: PropertiesType, indent=2) => {
 }
 
 const genYapiInterface = (options: {apiData: ApiDataType, name?: string, indent?: number}) => {
-  ignoredVar = [];
   const { apiData, indent } = options;
   const name = pathToInterfaceName(apiData)
   const { req_body_other = '{}', res_body = '{}', req_query = [] } = apiData;
   const { properties: reqProperties = [] } = JSON.parse(req_body_other);
   const { properties: resProperties = [] } = JSON.parse(res_body);
-  const req = `\
+  ignoredType = [];
+  const reqText = `\
 ${req_query.length > 0 ? `\
 /** ${markFromApiData(apiData)}请求参数 */
 export interface ${name}ParamsType {
@@ -91,16 +92,26 @@ export interface ${name}ParamsType {
 /** ${markFromApiData(apiData)}请求参数 */
 export interface ${name}ParamsType {${properties2Type(reqProperties, indent)}
 }
- `
-  const resp = `\
+`
+  const reqignoredType = [...ignoredType];
+
+  ignoredType = [];
+  const respText = `\
 /** ${markFromApiData(apiData)}响应参数 */
 export interface ${name}Type {${properties2Type(resProperties, indent)}
 }
- `;
+`;
+  const respignoredType = [...ignoredType];
+
   return {
-    req,
-    resp,
-    ignoredVar,
+    req: {
+      text: reqText,
+      ignoredType: reqignoredType,
+    },
+    resp: {
+      text: respText,
+      ignoredType: respignoredType,
+    },
   }
 }
 
