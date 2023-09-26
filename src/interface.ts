@@ -46,11 +46,11 @@ export interface PropertyType {
 
 export type PropertyItemsType = PropertyType & {
   properties: PropertiesType
-}
+};
 
 export type PropertiesValType = PropertyType & {
   items?: PropertyItemsType;
-}
+};
 
 export interface PropertiesType {
   [x: string]: PropertiesValType;

@@ -26,11 +26,11 @@ const reqYapi = (id: string | number) => {
 			})
 		}
 	});
-}
+};
 
 let resp = undefined;
 let result = undefined;
-let hoverLine = new vscode.Position(0, 0)
+let hoverLine = new vscode.Position(0, 0);
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.languages.registerHoverProvider('*', {
@@ -42,26 +42,31 @@ export function activate(context: vscode.ExtensionContext) {
       if (id) {
 				try {
 					resp = await reqYapi(id);
-					result = genYapiInterface({apiData: resp.data.data})
+					const {typeMap={}, extTypeMap={}} = vscode.workspace.getConfiguration('yapihello');
+					result = genYapiInterface({
+						apiData: resp.data.data,
+						typeMap,
+						extTypeMap,
+					});
 					const hoverText = new vscode.MarkdownString('');
 					hoverText.isTrusted = true;
 					hoverText.appendMarkdown('[生成请求类型](command:yapihello.reqInterface)');
 					hoverText.appendMarkdown('[ 生成响应类型](command:yapihello.respInterface)');
 					hoverText.appendMarkdown(`\n\n请求类型`);
 					hoverText.appendCodeblock(`${result.req.text}`);
-					hoverText.appendMarkdown(`响应类型`)
+					hoverText.appendMarkdown(`响应类型`);
 					hoverText.appendCodeblock(`${result.resp.text}`);
 					const wordRange = document.getWordRangeAtPosition(position);
-					const {req: {ignoredType: reqignoredType}, resp: {ignoredType: respignoredType}} = result
+					const {req: {ignoredType: reqignoredType}, resp: {ignoredType: respignoredType}} = result;
 					if (reqignoredType.length > 0) {
-						vscode.window.showWarningMessage(`由于请求类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${reqignoredType.join(',')}`)
+						vscode.window.showWarningMessage(`由于请求类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${reqignoredType.join(',')}`);
 					}
 					if (respignoredType.length > 0) {
-						vscode.window.showWarningMessage(`由于响应类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${respignoredType.join(',')}`)
+						vscode.window.showWarningMessage(`由于响应类型未被收录，以下字段被忽略，请在设置中的yapihello.typemap补充类型映射：${respignoredType.join(',')}`);
 					}
 					return new vscode.Hover(hoverText, wordRange);
 				} catch (error) {
-					vscode.window.showErrorMessage(`请在设置中正确当前插件配置的四个cookie字段,${error}`)
+					vscode.window.showErrorMessage(`请在设置中正确当前插件配置的四个cookie字段,${error}`);
 				}
       }
 
@@ -78,8 +83,8 @@ export function activate(context: vscode.ExtensionContext) {
       if (activeTextEditor) {
         activeTextEditor.edit((editBuilder) => {
 					const insertText = `\
-${result!.req.ignoredType.length ? `// 以下字段类型未被收录，已设置为unknown，可在Setting.yapihello.typeMap设置\n//${result!.req.ignoreVar.join(',')}` : ''}
-${result!.req.text}`
+${result!.req.ignoredType.length ? `\n// 以下字段类型未被收录，已设置为unknown，可在Setting.yapihello.typeMap设置\n//${result!.req.ignoredType.join(',')}` : ''}
+${result!.req.text}`;
           editBuilder.insert(hoverLine, insertText);
 				});
       }
@@ -98,7 +103,7 @@ ${result!.req.text}`
         activeTextEditor.edit((editBuilder) => {
 					const insertText = `\
 ${result!.resp.ignoredType?.length ? `\n// 以下字段类型未被收录，已设置为unknown，可在Setting.yapihello.typeMap设置\n// ${result!.resp.ignoredType.join(',')}` : ''}
-${result!.resp.text}`
+${result!.resp.text}`;
           editBuilder.insert(hoverLine, insertText);
         });
       }

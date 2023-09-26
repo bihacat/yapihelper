@@ -57,7 +57,14 @@
             "string": ["string"],
             "boolean": ["boolean"]
           },
-          "description": "类型映射"
+          "description": "默认类型映射(映射后不会注释)"
+        },
+        "yapihello.extTypeMap": {
+          "type": "object",
+          "default": {
+            
+          },
+          "description": "扩展类型映射(映射后会在类型后注释，格式参考typeMap)"
         }
       }
     }
