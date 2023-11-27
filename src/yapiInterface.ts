@@ -63,7 +63,7 @@ const parseObj2Type = (val: PropertyItemsType | PropertiesValType, key: string, 
     if (!objProperties || !Object.keys(objProperties).length) {
       return makeSingleProperty({indent, key, description, other: 'Record<string, unknown>'});
     }
-    return makeSingleProperty({indent, key, description, other: `{${properties2Type(objProperties, indent+2)}\n${indentSpace(indent)}}`}).slice(0, -1);
+    return makeSingleProperty({indent, key, description, other: `{${properties2Type({properties: objProperties, indent: indent+2})}\n${indentSpace(indent)}}`}).slice(0, -1);
   }
   const typeStr = typeMap()[lowerType];
   if (typeStr) {
@@ -78,7 +78,21 @@ const parseObj2Type = (val: PropertyItemsType | PropertiesValType, key: string, 
 };
 
 /** 遍历全部属性 */
-const properties2Type = (properties: PropertiesType, indent=2) => {
+const properties2Type = (options: {
+  properties: PropertiesType,
+  indent?: number,
+  typeMap?: TypeMapType,
+  extTypeMap?: TypeMapType,
+  name?: string,
+}) => {
+  const {
+    properties,
+    indent = 2,
+    typeMap,
+    extTypeMap,
+  } = options;
+  if (typeMap) {_yapiTypeMap = typeMap;}
+  if (extTypeMap) {_extTypeMap = extTypeMap;}
   const keys = Object.keys(properties);
   return keys.map((key) => {
     const val = properties[key];
@@ -121,7 +135,7 @@ export interface ${name}ParamsType {
  ${query2Type(req_query)}
 }\n` : ''}\
 /** ${markFromApiData(apiData)}请求参数 */
-export interface ${name}ParamsType {${properties2Type(reqProperties, indent)}
+export interface ${name}ParamsType {${properties2Type({properties: reqProperties, indent})}
 }
 `;
   const reqignoredType = [...ignoredType];
@@ -129,7 +143,7 @@ export interface ${name}ParamsType {${properties2Type(reqProperties, indent)}
   ignoredType = [];
   const respText = `\
 /** ${markFromApiData(apiData)}响应参数 */
-export interface ${name}Type {${properties2Type(resProperties, indent)}
+export interface ${name}Type {${properties2Type({properties: resProperties, indent})}
 }
 `;
   const respignoredType = [...ignoredType];
@@ -148,4 +162,5 @@ export interface ${name}Type {${properties2Type(resProperties, indent)}
 
 export {
   genYapiInterface,
+  properties2Type,
 };
