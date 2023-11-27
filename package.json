@@ -37,7 +37,7 @@
       },
       {
         "command": "extension.processSelectedText",
-        "title": "右键转换类型"
+        "title": "转换为类型"
       }
     ],
     "configuration": {

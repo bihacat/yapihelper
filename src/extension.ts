@@ -117,10 +117,14 @@ ${result!.resp.text}`;
 		const selectedText = textEditor.document.getText(textEditor.selection);
 		// 将处理后的文本替换回原文档
 		try {
-			const {properties} = JSON.parse(selectedText);
+			const selectObj = JSON.parse(selectedText);
+			const {properties, items, type} = selectObj;
 			const {typeMap={}, extTypeMap={}} = vscode.workspace.getConfiguration('yapihello');
 			const result = `export interface TypeName {${properties2Type({
-					properties: properties,
+					properties: {
+						object: properties,
+						array: items.properties,
+					}[type as string],
 					typeMap,
 					extTypeMap,
 				})}\n}`;
