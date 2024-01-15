@@ -123,7 +123,7 @@ ${result!.resp.text}`;
 			const result = `export interface TypeName {${properties2Type({
 					properties: {
 						object: properties,
-						array: items.properties,
+						array: items?.properties,
 					}[type as string],
 					typeMap,
 					extTypeMap,
