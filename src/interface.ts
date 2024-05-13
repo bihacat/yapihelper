@@ -56,4 +56,4 @@ export interface PropertiesType {
   [x: string]: PropertiesValType;
 }
 
-export type TypeMapType = Record<string, string[]>;
+export type TypeMapType = Record<string, string>;

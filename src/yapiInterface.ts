@@ -1,4 +1,4 @@
-import { ApiDataType, PropertiesType, PropertiesValType, PropertyItemsType, TypeMapType } from './interface';
+import { PropertiesType, PropertiesValType, PropertyItemsType, TypeMapType } from './interface';
 
 let ignoredType: string[] = [];
 let _yapiTypeMap: TypeMapType;
@@ -17,42 +17,6 @@ const makeSingleProperty=(opt: {indent: number, key: string, description: string
 ${indentSpace(indent)}${key}: ${other};${remark ? ` // ${remark}` : ''}`;
 };
 
-/** 转换Query */
-const query2Type = (queries: {name: string, desc: string}[]) => {
-  return queries.map((query) => makeSingleProperty({
-    indent: 2, key: query.name, description: query.desc, other: 'string'
-  })).join(',');
-};
-
-/** 接口title提取注释部分 */
-const markFromApiData = (apiData: ApiDataType) => {
-  return (apiData.title.match(/[^\x00-\xff]/g) || []).join('');
-};
-
-const parseTypeMap = (parseKey: 'typeMap' | 'extTypeMap') => {
-  const willParse = {
-    typeMap: _yapiTypeMap,
-    extTypeMap: _extTypeMap,
-  }[parseKey];
-  return Object.entries(willParse).reduce((prev, [val, keys]) => ({
-    ...prev,
-    ...keys.map((key) => ({
-      [key.toLocaleLowerCase()]: val,
-    })).reduce((prev, cur) => ({
-      ...prev,
-      ...cur,
-    }), {}),
-  }), {} as Record<string, string>);
-};
-
-const typeMap = () => {
-  return parseTypeMap('typeMap');
-};
-
-const extTypeMap = () => {
-  return parseTypeMap('extTypeMap');
-};
-
 /** 根据类型不同构建单条属性，如果是对象，会递归到数字、字符串、布尔才停止 */
 const parseObj2Type = (val: PropertyItemsType | PropertiesValType, key: string, indent: number, description: string) => {
   const {type} = val;
@@ -65,11 +29,11 @@ const parseObj2Type = (val: PropertyItemsType | PropertiesValType, key: string, 
     }
     return makeSingleProperty({indent, key, description, other: `{${properties2Type({properties: objProperties, indent: indent+2})}\n${indentSpace(indent)}}`}).slice(0, -1);
   }
-  const typeStr = typeMap()[lowerType];
+  const typeStr = _yapiTypeMap[lowerType];
   if (typeStr) {
     return makeSingleProperty({indent, key, description, other:typeStr});
   }
-  const extTypeStr = extTypeMap()[lowerType];
+  const extTypeStr = _extTypeMap[lowerType];
   if (extTypeStr) {
     return makeSingleProperty({indent, key, description, other:extTypeStr, remark: `${type}=>${extTypeStr}`});
   }
@@ -108,59 +72,6 @@ const properties2Type = (options: {
   }).join('');
 };
 
-/** 接口path转化为interface名 */
-const pathToInterfaceName = (apiData: ApiDataType) => {
-  return apiData.path.split('/').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-};
-
-const genYapiInterface = (options: {
-  apiData: ApiDataType,
-  name?: string,
-  indent?: number,
-  typeMap: TypeMapType,
-  extTypeMap: TypeMapType,
-}) => {
-  const { apiData, indent, typeMap, extTypeMap } = options;
-  _yapiTypeMap = typeMap;
-  _extTypeMap = extTypeMap;
-  const name = pathToInterfaceName(apiData);
-  const { req_body_other = '{}', res_body = '{}', req_query = [] } = apiData;
-  const { properties: reqProperties = [] } = JSON.parse(req_body_other);
-  const { properties: resProperties = [] } = JSON.parse(res_body);
-  ignoredType = [];
-  const reqText = `\
-${req_query.length > 0 ? `\
-/** ${markFromApiData(apiData)}请求参数 */
-export interface ${name}ParamsType {
- ${query2Type(req_query)}
-}\n` : ''}\
-/** ${markFromApiData(apiData)}请求参数 */
-export interface ${name}ParamsType {${properties2Type({properties: reqProperties, indent})}
-}
-`;
-  const reqignoredType = [...ignoredType];
-
-  ignoredType = [];
-  const respText = `\
-/** ${markFromApiData(apiData)}响应参数 */
-export interface ${name}Type {${properties2Type({properties: resProperties, indent})}
-}
-`;
-  const respignoredType = [...ignoredType];
-
-  return {
-    req: {
-      text: reqText,
-      ignoredType: reqignoredType,
-    },
-    resp: {
-      text: respText,
-      ignoredType: respignoredType,
-    },
-  };
-};
-
 export {
-  genYapiInterface,
   properties2Type,
 };

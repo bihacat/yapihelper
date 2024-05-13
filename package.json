@@ -1,8 +1,9 @@
 {
-  "name": "yapihello",
-  "displayName": "YapiHello",
-  "description": "哈啰yapi助手",
-  "publisher": "tianfengyu",
+  "name": "yapihelper",
+  "displayName": "Yapi助手",
+  "description": "提供jsonSchema转为ts类型功能",
+  "author": "bihacat",
+  "publisher": "bihacat",
   "repository": {
     "type": "git",
     "url": "https://github.com/bihacat/yapihello.git"
@@ -28,55 +29,29 @@
     },
     "commands": [
       {
-        "command": "yapihello.reqInterface",
-        "title": "填充Yapi请求类型"
-      },
-      {
-        "command": "yapihello.respInterface",
-        "title": "填充Yapi响应类型"
-      },
-      {
         "command": "extension.processSelectedText",
         "title": "转换为类型"
       }
     ],
     "configuration": {
-      "title": "YapiHello",
+      "title": "Yapi助手",
       "properties": {
-        "yapihello._hjSessionUser_2777326": {
-          "type": "string",
-          "default": "",
-          "description": "yapi.hellobike.cn中cookie的_hjSessionUser_2777326"
-        },
-        "yapihello._yapi_token": {
-          "type": "string",
-          "default": "",
-          "description": "yapi.hellobike.cn中cookie的_yapi_token"
-        },
-        "yapihello._yapi_uid": {
-          "type": "string",
-          "default": "",
-          "description": "yapi.hellobike.cn中cookie的_yapi_uid"
-        },
-        "yapihello.ubt_ssid": {
-          "type": "string",
-          "default": "",
-          "description": "yapi.hellobike.cn中cookie的ubt_ssid"
-        },
-        "yapihello.typeMap": {
+        "yapiHelper.typeMap": {
           "type": "object",
           "default": {
-            "number": ["number", "integer", "long", "int", "bigdecimal"],
-            "string": ["string"],
-            "boolean": ["boolean"]
+            "number": "number",
+            "integer": "number",
+            "long": "number",
+            "int": "number",
+            "bigdecimal": "number",
+            "string": "string",
+            "boolean": "boolean"
           },
           "description": "默认类型映射(映射后不会注释)"
         },
-        "yapihello.extTypeMap": {
+        "yapiHelper.extTypeMap": {
           "type": "object",
-          "default": {
-            
-          },
+          "default": {},
           "description": "扩展类型映射(映射后会在类型后注释，格式参考typeMap)"
         }
       }
