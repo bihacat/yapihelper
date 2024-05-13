@@ -6,7 +6,7 @@
   "publisher": "bihacat",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bihacat/yapihello.git"
+    "url": "https://github.com/bihacat/yapihelper.git"
   },
   "version": "0.0.1",
   "engines": {
